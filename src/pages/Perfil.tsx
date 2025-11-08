@@ -21,10 +21,10 @@ export default function Perfil() {
   if (!user) return null;
 
   const nivelColors = {
-    NOOB: "bg-noob text-noob-foreground",
-    AMADOR: "bg-amador text-amador-foreground",
-    INTERMEDIARIO: "bg-intermediario text-intermediario-foreground",
-    PROPLAYER: "bg-avancado text-avancado-foreground",
+    noob: "bg-noob text-noob-foreground",
+    amador: "bg-amador text-amador-foreground",
+    intermediario: "bg-intermediario text-intermediario-foreground",
+    proplayer: "bg-avancado text-avancado-foreground",
   };
 
   return (
@@ -57,8 +57,8 @@ export default function Perfil() {
                 <div className="flex-1 text-center sm:text-left">
                   <h2 className="text-2xl font-bold mb-2">{user.nome}</h2>
                   <p className="text-muted-foreground mb-3">{user.email}</p>
-                  <Badge className={`${nivelColors[user.nivel]} text-lg px-4 py-1`}>
-                    {user.nivel}
+                  <Badge className={`${nivelColors[user.tipo]} text-lg px-4 py-1`}>
+                    {user.tipo.toUpperCase()}
                   </Badge>
                 </div>
               </div>
@@ -115,18 +115,18 @@ export default function Perfil() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Nível Atual</span>
-                  <Badge className={nivelColors[user.nivel]}>{user.nivel}</Badge>
+                  <Badge className={nivelColors[user.tipo]}>{user.tipo.toUpperCase()}</Badge>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
                     style={{
                       width: `${
-                        user.nivel === "NOOB"
+                        user.tipo === "noob"
                           ? 25
-                          : user.nivel === "AMADOR"
+                          : user.tipo === "amador"
                           ? 50
-                          : user.nivel === "INTERMEDIARIO"
+                          : user.tipo === "intermediario"
                           ? 75
                           : 100
                       }%`,

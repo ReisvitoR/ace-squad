@@ -1,44 +1,67 @@
-const API_BASE_URL = "http://localhost:8000/api/v1";
+// Use o proxy do Vite em desenvolvimento
+const API_BASE_URL = import.meta.env.DEV 
+  ? "/api/v1" 
+  : "https://substantial-ebonee-galera-volei-7e40783c.koyeb.app/api/v1";
 
 // Types
 export interface User {
   id: number;
   nome: string;
   email: string;
-  nivel: "NOOB" | "AMADOR" | "INTERMEDIARIO" | "PROPLAYER";
-  partidas_jogadas?: number;
-  vitorias?: number;
+  tipo: "noob" | "amador" | "intermediario" | "proplayer";
+  ativo: boolean;
+  pontuacao_total: number;
+  partidas_jogadas: number;
+  vitorias: number;
+  derrotas: number;
+  created_at: string;
+  updated_at: string | null;
 }
 
 export interface AuthResponse {
   access_token: string;
+  token_type: string;
   user: User;
 }
 
 export interface Partida {
   id: number;
   titulo: string;
-  descricao?: string;
-  tipo: "normal" | "iniciante" | "ranked";
-  categoria: "livre" | "noob" | "amador" | "intermediario" | "avancado";
+  descricao?: string | null;
+  tipo: "iniciante" | "normal" | "ranked";
+  categoria: string;
   data_partida: string;
-  local: string;
+  data_fim?: string | null;
+  duracao_estimada: number;
+  local?: string | null;
   max_participantes: number;
-  participantes_count: number;
   publica: boolean;
+  status: "ativa" | "marcada" | "em_andamento" | "finalizada" | "cancelada" | "inativa";
+  pontuacao_equipe_a: number;
+  pontuacao_equipe_b: number;
   organizador_id: number;
-  organizador?: User;
-  participantes?: User[];
-  estou_participando?: boolean;
+  created_at: string;
+  updated_at: string | null;
+  organizador: User;
+  participantes: User[];
+  total_participantes: number;
+  participantes_confirmados: number;
+  todos_confirmaram: boolean;
 }
 
 export interface Convite {
   id: number;
-  partida_id: number;
+  status: "pendente" | "aceito" | "recusado" | "expirado";
+  mandante_id: number;
   convidado_id: number;
-  mensagem?: string;
-  status: "pendente" | "aceito" | "recusado";
-  partida?: Partida;
+  partida_id: number;
+  mensagem?: string | null;
+  data_expiracao?: string | null;
+  created_at: string;
+  updated_at: string | null;
+  mandante: User;
+  convidado: User;
+  partida: Partida;
 }
 
 // API Client
@@ -118,21 +141,32 @@ class ApiClient {
     return this.request<Partida>(`/partidas/${id}`);
   }
 
-  async createPartida(data: Omit<Partida, "id" | "participantes_count" | "organizador_id" | "organizador" | "participantes" | "estou_participando">): Promise<Partida> {
+  async createPartida(data: {
+    titulo: string;
+    descricao?: string;
+    tipo: "iniciante" | "normal" | "ranked";
+    categoria?: string;
+    data_partida: string;
+    data_fim?: string;
+    duracao_estimada?: number;
+    local?: string;
+    max_participantes?: number;
+    publica?: boolean;
+  }): Promise<Partida> {
     return this.request<Partida>("/partidas/", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async participarPartida(id: number): Promise<void> {
-    return this.request<void>(`/partidas/${id}/participar`, {
+  async participarPartida(id: number): Promise<Partida> {
+    return this.request<Partida>(`/partidas/${id}/participar`, {
       method: "POST",
     });
   }
 
-  async sairPartida(id: number): Promise<void> {
-    return this.request<void>(`/partidas/${id}/participar`, {
+  async sairPartida(id: number): Promise<Partida> {
+    return this.request<Partida>(`/partidas/${id}/participar`, {
       method: "DELETE",
     });
   }
@@ -142,14 +176,14 @@ class ApiClient {
     return this.request<Convite[]>("/convites/recebidos");
   }
 
-  async aceitarConvite(id: number): Promise<void> {
-    return this.request<void>(`/convites/${id}/aceitar`, {
+  async aceitarConvite(id: number): Promise<Convite> {
+    return this.request<Convite>(`/convites/${id}/aceitar`, {
       method: "PUT",
     });
   }
 
-  async recusarConvite(id: number): Promise<void> {
-    return this.request<void>(`/convites/${id}/recusar`, {
+  async recusarConvite(id: number): Promise<Convite> {
+    return this.request<Convite>(`/convites/${id}/recusar`, {
       method: "PUT",
     });
   }
@@ -163,7 +197,16 @@ class ApiClient {
 
   // Perfil
   async getPerfil(): Promise<User> {
-    return this.request<User>("/perfil/");
+    return this.request<User>("/auth/me");
+  }
+
+  // Usuários
+  async getUsuarios(skip: number = 0, limit: number = 100): Promise<User[]> {
+    return this.request<User[]>(`/usuarios/?skip=${skip}&limit=${limit}`);
+  }
+
+  async getUsuario(userId: number): Promise<User> {
+    return this.request<User>(`/usuarios/${userId}`);
   }
 }
 

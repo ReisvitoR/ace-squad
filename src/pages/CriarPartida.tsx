@@ -1,34 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "@/components/ui/select-native";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
 
 export default function CriarPartida() {
   const [isLoading, setIsLoading] = useState(false);
   const [tipo, setTipo] = useState<"normal" | "iniciante" | "ranked">("normal");
   const [categoria, setCategoria] = useState<string>("livre");
   const [publica, setPublica] = useState(true);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const isMountedRef = useRef(true);
   
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Cleanup ao desmontar
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Quando a data de início muda, ajusta a data de fim para o mesmo dia
+  const handleDataInicioChange = (value: string) => {
+    setDataInicio(value);
+    
+    if (value && !dataFim) {
+      // Se não tem data fim, define uma hora depois por padrão
+      const inicio = new Date(value);
+      const fim = new Date(inicio.getTime() + 2 * 60 * 60 * 1000); // +2 horas
+      const fimFormatted = fim.toISOString().slice(0, 16);
+      setDataFim(fimFormatted);
+    } else if (value && dataFim) {
+      // Se já tem data fim, mantém o mesmo dia mas preserva o horário
+      const inicio = new Date(value);
+      const fimAtual = new Date(dataFim);
+      
+      const novaDataFim = new Date(
+        inicio.getFullYear(),
+        inicio.getMonth(),
+        inicio.getDate(),
+        fimAtual.getHours(),
+        fimAtual.getMinutes()
+      );
+      
+      setDataFim(novaDataFim.toISOString().slice(0, 16));
     }
-  }, [user, navigate]);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,9 +67,24 @@ export default function CriarPartida() {
     const formData = new FormData(e.currentTarget);
     const titulo = formData.get("titulo") as string;
     const descricao = formData.get("descricao") as string;
-    const data_partida = formData.get("data_partida") as string;
     const local = formData.get("local") as string;
     const max_participantes = parseInt(formData.get("max_participantes") as string);
+
+    // Validação: data fim deve ser depois da data início
+    if (new Date(dataFim) <= new Date(dataInicio)) {
+      toast({
+        title: "Erro de validação",
+        description: "A data/hora de término deve ser posterior à data/hora de início.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Calcula duração em minutos
+    const duracao_estimada = Math.round(
+      (new Date(dataFim).getTime() - new Date(dataInicio).getTime()) / (1000 * 60)
+    );
 
     try {
       const partida = await api.createPartida({
@@ -47,7 +92,9 @@ export default function CriarPartida() {
         descricao,
         tipo,
         categoria: categoria as any,
-        data_partida,
+        data_partida: dataInicio,
+        data_fim: dataFim,
+        duracao_estimada,
         local,
         max_participantes,
         publica,
@@ -115,60 +162,94 @@ export default function CriarPartida() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipo">Tipo *</Label>
-                  <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
-                    <SelectTrigger className="transition-smooth">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="iniciante">Iniciante</SelectItem>
-                      <SelectItem value="ranked">Ranked</SelectItem>
-                    </SelectContent>
+                  <Select 
+                    id="tipo"
+                    name="tipo"
+                    value={tipo} 
+                    onChange={(e) => setTipo(e.target.value as any)}
+                    className="transition-smooth"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="iniciante">Iniciante</option>
+                    <option value="ranked">Ranked</option>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="categoria">Categoria *</Label>
-                  <Select value={categoria} onValueChange={setCategoria}>
-                    <SelectTrigger className="transition-smooth">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="livre">Livre</SelectItem>
-                      <SelectItem value="noob">Noob</SelectItem>
-                      <SelectItem value="amador">Amador</SelectItem>
-                      <SelectItem value="intermediario">Intermediário</SelectItem>
-                      <SelectItem value="avancado">Avançado</SelectItem>
-                    </SelectContent>
+                  <Select 
+                    id="categoria"
+                    name="categoria"
+                    value={categoria} 
+                    onChange={(e) => setCategoria(e.target.value)}
+                    className="transition-smooth"
+                  >
+                    <option value="livre">Livre</option>
+                    <option value="noob">Noob</option>
+                    <option value="amador">Amador</option>
+                    <option value="intermediario">Intermediário</option>
+                    <option value="avancado">Avançado</option>
                   </Select>
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="data_partida">Data e Hora *</Label>
+                  <Label htmlFor="data_inicio">Data e Hora de Início *</Label>
                   <Input
-                    id="data_partida"
-                    name="data_partida"
+                    id="data_inicio"
+                    name="data_inicio"
                     type="datetime-local"
+                    value={dataInicio}
+                    onChange={(e) => handleDataInicioChange(e.target.value)}
                     required
                     className="transition-smooth"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="max_participantes">Máx. Participantes *</Label>
+                  <Label htmlFor="data_fim">Data e Hora de Término *</Label>
                   <Input
-                    id="max_participantes"
-                    name="max_participantes"
-                    type="number"
-                    min="2"
-                    max="50"
-                    defaultValue="12"
+                    id="data_fim"
+                    name="data_fim"
+                    type="datetime-local"
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
                     required
+                    min={dataInicio}
                     className="transition-smooth"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Duração: {dataInicio && dataFim ? (() => {
+                      const inicio = new Date(dataInicio);
+                      const fim = new Date(dataFim);
+                      if (isNaN(inicio.getTime()) || isNaN(fim.getTime()) || fim <= inicio) {
+                        return '0 minutos';
+                      }
+                      const minutos = Math.round((fim.getTime() - inicio.getTime()) / (1000 * 60));
+                      const horas = Math.floor(minutos / 60);
+                      const mins = minutos % 60;
+                      if (horas > 0) {
+                        return `${horas}h${mins > 0 ? ` ${mins}min` : ''}`;
+                      }
+                      return `${minutos} minutos`;
+                    })() : '0 minutos'}
+                  </p>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="max_participantes">Máx. Participantes *</Label>
+                <Input
+                  id="max_participantes"
+                  name="max_participantes"
+                  type="number"
+                  min="2"
+                  max="50"
+                  defaultValue="12"
+                  required
+                  className="transition-smooth"
+                />
               </div>
 
               <div className="space-y-2">

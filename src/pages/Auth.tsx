@@ -7,10 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import volleyballIcon from "@/assets/volleyball.png";
+import logoIfpi from "@/assets/logo-ifpi.svg";
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const { login, register, user } = useAuth();
   const navigate = useNavigate();
 
@@ -68,23 +72,42 @@ export default function Auth() {
       </div>
 
       <div className="w-full max-w-md animate-slide-up relative z-10">
-        {/* Logo with spinning volleyball */}
+        {/* Logo with volleyball */}
         <div className="flex flex-col items-center justify-center gap-4 mb-8">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl animate-pulse-glow">
-              <img 
-                src={volleyballIcon} 
-                alt="Volleyball" 
-                className="w-12 h-12 animate-spin-slow"
-              />
+          <div className="relative group">
+            {/* Outer glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary rounded-full blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 scale-150" />
+            
+            {/* Main circle */}
+            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary via-accent to-primary flex items-center justify-center shadow-2xl animate-pulse-glow">
+              {/* Inner glow */}
+              <div className="absolute inset-2 rounded-full bg-background/10 backdrop-blur-sm" />
+              
+              {/* Icon - Removido background, ajustado tamanho e mix-blend-mode */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-3">
+                <img 
+                  src={volleyballIcon} 
+                  alt="Volleyball" 
+                  className="w-full h-full object-contain animate-spin-slow drop-shadow-2xl brightness-110 contrast-125"
+                  style={{ mixBlendMode: 'lighten' }}
+                />
+              </div>
             </div>
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent blur-xl opacity-50 animate-pulse" />
+
+            {/* Orbiting dots */}
+            <div className="absolute inset-0 animate-spin-slow">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full shadow-lg" />
+            </div>
+            <div className="absolute inset-0 animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '4s' }}>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-accent rounded-full shadow-lg" />
+            </div>
           </div>
+          
           <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-pulse">
-              VolleyMatch
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-2">
+              Galera do Vôlei
             </h1>
-            <p className="text-sm text-muted-foreground mt-1 animate-fade-in">
+            <p className="text-muted-foreground font-medium">
               Sua plataforma de vôlei
             </p>
           </div>
@@ -101,7 +124,7 @@ export default function Auth() {
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login" className="transition-smooth">Login</TabsTrigger>
-                <TabsTrigger value="register" className="transition-smooth">Registrar</TabsTrigger>
+                <TabsTrigger value="register" className="transition-smooth">Registrar-se</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="animate-fade-in">
@@ -119,14 +142,28 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="senha">Senha</Label>
-                    <Input
-                      id="senha"
-                      name="senha"
-                      type="password"
-                      placeholder="••••••••"
-                      required
-                      className="transition-smooth focus:scale-[1.02]"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="senha"
+                        name="senha"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        maxLength={20}
+                        required
+                        className="transition-smooth focus:scale-[1.02] pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <Button
                     type="submit"
@@ -170,14 +207,31 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="senha-register">Senha</Label>
-                    <Input
-                      id="senha-register"
-                      name="senha"
-                      type="password"
-                      placeholder="••••••••"
-                      required
-                      className="transition-smooth focus:scale-[1.02]"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="senha-register"
+                        name="senha"
+                        type={showPasswordRegister ? "text" : "password"}
+                        placeholder="••••••••"
+                        maxLength={20}
+                        required
+                        className="transition-smooth focus:scale-[1.02] pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordRegister(!showPasswordRegister)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPasswordRegister ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Máximo de 20 caracteres
+                    </p>
                   </div>
                   <Button
                     type="submit"
@@ -213,6 +267,21 @@ export default function Auth() {
               <span className="w-2 h-2 rounded-full bg-amador animate-pulse" style={{ animationDelay: '0.2s' }} />
               <span className="w-2 h-2 rounded-full bg-intermediario animate-pulse" style={{ animationDelay: '0.4s' }} />
               <span className="w-2 h-2 rounded-full bg-avancado animate-pulse" style={{ animationDelay: '0.6s' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Rodapé Educacional */}
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <div className="flex items-center justify-center gap-4 opacity-80 hover:opacity-100 transition-opacity">
+            <img 
+              src={logoIfpi} 
+              alt="Logo IFPI" 
+              className="h-16 w-auto"
+            />
+            <div className="text-left text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground mb-1">Projeto Educacional - Programação para Internet II</p>
+              <p className="text-xs">Professor Rogério Silva - IFPI Campus Teresina Central</p>
             </div>
           </div>
         </div>

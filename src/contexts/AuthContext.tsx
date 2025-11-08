@@ -19,18 +19,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem("token");
-    if (token) {
-      api.setToken(token);
-      api.getPerfil()
-        .then(setUser)
-        .catch(() => {
-          api.clearToken();
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        console.log("🔐 Verificando autenticação... Token:", token ? "Presente" : "Ausente");
+        
+        if (token) {
+          api.setToken(token);
+          console.log("📡 Buscando perfil do usuário...");
+          const userData = await api.getPerfil();
+          console.log("✅ Usuário autenticado:", userData.nome);
+          setUser(userData);
+        } else {
+          console.log("ℹ️ Nenhum token encontrado");
+        }
+      } catch (error) {
+        console.error("❌ Erro ao verificar autenticação:", error);
+        api.clearToken();
+        localStorage.removeItem("token");
+      } finally {
+        console.log("✅ Verificação de autenticação concluída");
+        setIsLoading(false);
+      }
+    };
+
+    // Adiciona um pequeno delay para garantir que tudo está montado
+    const timer = setTimeout(() => {
+      checkAuth();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const login = async (email: string, senha: string) => {

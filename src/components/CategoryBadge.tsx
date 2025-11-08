@@ -25,12 +25,13 @@ const categoryConfig = {
 };
 
 interface CategoryBadgeProps {
-  categoria: keyof typeof categoryConfig;
+  categoria: string;
   className?: string;
 }
 
 export function CategoryBadge({ categoria, className }: CategoryBadgeProps) {
-  const config = categoryConfig[categoria];
+  const categoriaLower = categoria.toLowerCase() as keyof typeof categoryConfig;
+  const config = categoryConfig[categoriaLower] || categoryConfig.livre;
 
   return (
     <Badge className={cn("font-semibold transition-smooth", config.className, className)}>

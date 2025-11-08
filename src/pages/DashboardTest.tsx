@@ -4,18 +4,16 @@ import { Header } from "@/components/Header";
 import { PartidaCard } from "@/components/PartidaCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select } from "@/components/ui/select-native";
 import { api, Partida } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Filter } from "lucide-react";
+import { Plus } from "lucide-react";
 
-export default function Dashboard() {
+export default function DashboardTest() {
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [minhasPartidas, setMinhasPartidas] = useState<Partida[]>([]);
   const [participando, setParticipando] = useState<Partida[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [categoria, setCategoria] = useState<string>("todas");
   const [activeTab, setActiveTab] = useState("todas");
   const isMountedRef = useRef(true);
   
@@ -30,13 +28,13 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Carrega partidas quando o componente monta ou categoria muda
+  // Carrega partidas quando o componente monta
   useEffect(() => {
     if (isMountedRef.current) {
       loadPartidas();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoria]);
+  }, []);
 
   const loadPartidas = async () => {
     if (!isMountedRef.current) return;
@@ -44,7 +42,7 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       const [todasPartidas, minhas, part] = await Promise.all([
-        api.getPartidas(categoria === "todas" ? undefined : categoria),
+        api.getPartidas(),
         api.getMinhasPartidas(),
         api.getPartidasParticipando(),
       ]);
@@ -58,7 +56,6 @@ export default function Dashboard() {
       if (!isMountedRef.current) return;
       
       console.error("Erro ao carregar partidas:", error);
-      // Define arrays vazios em caso de erro
       setPartidas([]);
       setMinhasPartidas([]);
       setParticipando([]);
@@ -110,38 +107,20 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-              Partidas Disponíveis
+              Partidas Disponíveis - TESTE SEM SELECT
             </h1>
             <p className="text-muted-foreground">
               Encontre a partida perfeita para seu nível
             </p>
           </div>
           
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex items-center">
-              <Filter className="absolute left-3 w-4 h-4 pointer-events-none z-10" />
-              <Select 
-                value={categoria} 
-                onChange={(e) => setCategoria(e.target.value)}
-                className="w-[180px] pl-9 transition-smooth"
-              >
-                <option value="todas">Todas</option>
-                <option value="livre">Livre</option>
-                <option value="noob">Noob</option>
-                <option value="amador">Amador</option>
-                <option value="intermediario">Intermediário</option>
-                <option value="avancado">Avançado</option>
-              </Select>
-            </div>
-            
-            <Button
-              onClick={() => navigate("/criar-partida")}
-              className="gap-2 font-semibold transition-bounce"
-            >
-              <Plus className="w-4 h-4" />
-              Nova Partida
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate("/criar-partida")}
+            className="gap-2 font-semibold transition-bounce"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Partida
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -187,8 +166,12 @@ export default function Dashboard() {
             ) : minhasPartidas.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Você ainda não criou nenhuma partida</p>
-                <Button onClick={() => navigate("/criar-partida")} className="mt-4">
-                  Criar minha primeira partida
+                <Button
+                  onClick={() => navigate("/criar-partida")}
+                  className="mt-4 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Criar Partida
                 </Button>
               </div>
             ) : (
@@ -213,7 +196,7 @@ export default function Dashboard() {
               </div>
             ) : participando.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Você ainda não está participando de nenhuma partida</p>
+                <p className="text-muted-foreground">Você não está participando de nenhuma partida</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CategoryBadge } from "@/components/CategoryBadge";
+import { PartidaStatus } from "@/components/PartidaStatus";
 import { Partida } from "@/lib/api";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
@@ -20,8 +21,10 @@ export function PartidaCard({
   onParticipar,
   canParticipate = true,
 }: PartidaCardProps) {
-  const isFull = partida.participantes_count >= partida.max_participantes;
-  const vagasRestantes = partida.max_participantes - partida.participantes_count;
+  // Calcula participantes: usa o array de participantes se existir, senão usa total_participantes
+  const numParticipantes = partida.participantes?.length ?? partida.total_participantes;
+  const isFull = numParticipantes >= partida.max_participantes;
+  const vagasRestantes = partida.max_participantes - numParticipantes;
 
   return (
     <Card
@@ -43,6 +46,8 @@ export function PartidaCard({
             {partida.descricao}
           </p>
         )}
+        {/* Status da Partida */}
+        <PartidaStatus status={partida.status} />
       </CardHeader>
 
       <CardContent className="space-y-3 pb-4">
@@ -63,11 +68,13 @@ export function PartidaCard({
         <div className="flex items-center gap-2 text-sm">
           <Users className="w-4 h-4" />
           <span className="font-semibold">
-            {partida.participantes_count}/{partida.max_participantes}
+            {numParticipantes}/{partida.max_participantes} participantes
           </span>
-          <span className="text-muted-foreground">
-            ({vagasRestantes} {vagasRestantes === 1 ? "vaga" : "vagas"})
-          </span>
+          {vagasRestantes > 0 && (
+            <span className="text-muted-foreground">
+              ({vagasRestantes} {vagasRestantes === 1 ? "vaga" : "vagas"})
+            </span>
+          )}
         </div>
       </CardContent>
 
@@ -78,15 +85,10 @@ export function PartidaCard({
               e.stopPropagation();
               onParticipar(partida.id);
             }}
-            disabled={!canParticipate || isFull || partida.estou_participando}
+            disabled={!canParticipate || isFull}
             className="w-full font-semibold transition-bounce"
-            variant={partida.estou_participando ? "secondary" : "default"}
           >
-            {partida.estou_participando
-              ? "Participando ✓"
-              : isFull
-              ? "Lotada"
-              : "Participar"}
+            {isFull ? "Lotada" : "Participar"}
           </Button>
         )}
       </CardFooter>
