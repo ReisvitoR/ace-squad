@@ -255,11 +255,22 @@ export default function CriarPartida() {
                     min={dataInicio}
                     className="transition-smooth"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Duração: {duracao}
-                  </p>
                 </div>
               </div>
+
+              {/* Exibição da Duração Calculada */}
+              {dataInicio && dataFim && (
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary">
+                      ⏱️ Duração da Partida:
+                    </span>
+                    <span className="text-lg font-bold text-foreground">
+                      {duracao}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="max_participantes">Máx. Participantes *</Label>
