@@ -108,6 +108,11 @@ export default function CriarPartida() {
       return;
     }
 
+    // Converte as datas do input datetime-local para ISO string com timezone do Brasil
+    // O input retorna a data/hora local, precisamos converter para UTC mantendo o horário Brasil
+    const dataInicioISO = new Date(dataInicio).toISOString();
+    const dataFimISO = new Date(dataFim).toISOString();
+
     // Calcula duração em minutos
     const duracao_estimada = Math.round(
       (new Date(dataFim).getTime() - new Date(dataInicio).getTime()) / (1000 * 60)
@@ -119,8 +124,8 @@ export default function CriarPartida() {
         descricao,
         tipo,
         categoria: categoria as any,
-        data_partida: dataInicio,
-        data_fim: dataFim,
+        data_partida: dataInicioISO,
+        data_fim: dataFimISO,
         duracao_estimada,
         local,
         max_participantes,
