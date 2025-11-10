@@ -55,9 +55,30 @@ export default function Dashboard() {
       
       if (!isMountedRef.current) return;
       
-      setPartidas(Array.isArray(todasPartidas) ? todasPartidas : []);
-      setMinhasPartidas(Array.isArray(minhas) ? minhas : []);
-      setParticipando(Array.isArray(part) ? part : []);
+      // Combina todas as partidas para garantir que nenhuma suma da aba "Todas"
+      const todasArray = Array.isArray(todasPartidas) ? todasPartidas : [];
+      const minhasArray = Array.isArray(minhas) ? minhas : [];
+      const partArray = Array.isArray(part) ? part : [];
+      
+      // Cria um Map para evitar duplicatas (usa o ID como chave)
+      const partidasMap = new Map<number, Partida>();
+      
+      // Adiciona todas as partidas ao mapa
+      [...todasArray, ...minhasArray, ...partArray].forEach(partida => {
+        if (partida && partida.id) {
+          partidasMap.set(partida.id, partida);
+        }
+      });
+      
+      // Converte o mapa de volta para array e filtra por categoria se necessário
+      const todasPartidasCombinadas = Array.from(partidasMap.values());
+      const partidasFiltradas = categoria === "todas" 
+        ? todasPartidasCombinadas
+        : todasPartidasCombinadas.filter(p => p.categoria === categoria);
+      
+      setPartidas(partidasFiltradas);
+      setMinhasPartidas(minhasArray);
+      setParticipando(partArray);
     } catch (error) {
       if (!isMountedRef.current) return;
       
