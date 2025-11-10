@@ -15,7 +15,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function CriarPartida() {
   const [isLoading, setIsLoading] = useState(false);
-  const [tipo, setTipo] = useState<"normal" | "iniciante" | "ranked">("normal");
+  const [tipo, setTipo] = useState<"normal" | "ranked">("normal");
   const [categoria, setCategoria] = useState<string>("livre");
   const [publica, setPublica] = useState(true);
   const [dataInicio, setDataInicio] = useState("");
@@ -87,7 +87,7 @@ export default function CriarPartida() {
     );
 
     try {
-      const partida = await api.createPartida({
+      const partidaData = {
         titulo,
         descricao,
         tipo,
@@ -98,7 +98,11 @@ export default function CriarPartida() {
         local,
         max_participantes,
         publica,
-      });
+      };
+
+      console.log("Enviando partida:", partidaData);
+
+      const partida = await api.createPartida(partidaData);
 
       toast({
         title: "Partida criada!",
@@ -107,6 +111,7 @@ export default function CriarPartida() {
 
       navigate(`/partida/${partida.id}`);
     } catch (error) {
+      console.error("Erro ao criar partida:", error);
       toast({
         title: "Erro ao criar partida",
         description: error instanceof Error ? error.message : "Erro desconhecido",
@@ -170,7 +175,6 @@ export default function CriarPartida() {
                     className="transition-smooth"
                   >
                     <option value="normal">Normal</option>
-                    <option value="iniciante">Iniciante</option>
                     <option value="ranked">Ranked</option>
                   </Select>
                 </div>

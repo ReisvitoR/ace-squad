@@ -28,7 +28,7 @@ export interface Partida {
   id: number;
   titulo: string;
   descricao?: string | null;
-  tipo: "iniciante" | "normal" | "ranked";
+  tipo: "normal" | "ranked";
   categoria: string;
   data_partida: string;
   data_fim?: string | null;
@@ -102,6 +102,16 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: "Erro desconhecido" }));
+      console.error("API Error:", response.status, error);
+      
+      // Se for erro 422, mostra detalhes de validação
+      if (response.status === 422 && error.detail) {
+        const errorMsg = Array.isArray(error.detail) 
+          ? error.detail.map((e: any) => `${e.loc?.join('.')}: ${e.msg}`).join(', ')
+          : error.detail;
+        throw new Error(errorMsg);
+      }
+      
       throw new Error(error.detail || `HTTP ${response.status}`);
     }
 
@@ -152,7 +162,7 @@ class ApiClient {
   async createPartida(data: {
     titulo: string;
     descricao?: string;
-    tipo: "iniciante" | "normal" | "ranked";
+    tipo: "normal" | "ranked";
     categoria?: string;
     data_partida: string;
     data_fim?: string;
