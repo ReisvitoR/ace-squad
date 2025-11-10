@@ -28,7 +28,7 @@ export interface Partida {
   id: number;
   titulo: string;
   descricao?: string | null;
-  tipo: "normal" | "ranked";
+  tipo: "amistosa" | "competitiva";
   categoria: string;
   data_partida: string;
   data_fim?: string | null;
@@ -162,7 +162,7 @@ class ApiClient {
   async createPartida(data: {
     titulo: string;
     descricao?: string;
-    tipo: "normal" | "ranked";
+    tipo: "amistosa" | "competitiva";
     categoria?: string;
     data_partida: string;
     data_fim?: string;

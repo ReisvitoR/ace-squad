@@ -15,11 +15,12 @@ import { ArrowLeft } from "lucide-react";
 
 export default function CriarPartida() {
   const [isLoading, setIsLoading] = useState(false);
-  const [tipo, setTipo] = useState<"normal" | "ranked">("normal");
+  const [tipo, setTipo] = useState<"amistosa" | "competitiva">("amistosa");
   const [categoria, setCategoria] = useState<string>("livre");
   const [publica, setPublica] = useState(true);
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [duracao, setDuracao] = useState("0 minutos");
   const isMountedRef = useRef(true);
   
   const { user } = useAuth();
@@ -32,6 +33,32 @@ export default function CriarPartida() {
       isMountedRef.current = false;
     };
   }, []);
+
+  // Calcula duração quando as datas mudam
+  useEffect(() => {
+    if (!dataInicio || !dataFim) {
+      setDuracao('0 minutos');
+      return;
+    }
+    
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+    
+    if (isNaN(inicio.getTime()) || isNaN(fim.getTime()) || fim <= inicio) {
+      setDuracao('0 minutos');
+      return;
+    }
+    
+    const minutos = Math.round((fim.getTime() - inicio.getTime()) / (1000 * 60));
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    
+    if (horas > 0) {
+      setDuracao(`${horas}h${mins > 0 ? ` ${mins}min` : ''}`);
+    } else {
+      setDuracao(`${minutos} minutos`);
+    }
+  }, [dataInicio, dataFim]);
 
   // Quando a data de início muda, ajusta a data de fim para o mesmo dia
   const handleDataInicioChange = (value: string) => {
@@ -174,8 +201,8 @@ export default function CriarPartida() {
                     onChange={(e) => setTipo(e.target.value as any)}
                     className="transition-smooth"
                   >
-                    <option value="normal">Normal</option>
-                    <option value="ranked">Ranked</option>
+                    <option value="amistosa">Amistosa</option>
+                    <option value="competitiva">Competitiva</option>
                   </Select>
                 </div>
 
@@ -224,20 +251,7 @@ export default function CriarPartida() {
                     className="transition-smooth"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Duração: {dataInicio && dataFim ? (() => {
-                      const inicio = new Date(dataInicio);
-                      const fim = new Date(dataFim);
-                      if (isNaN(inicio.getTime()) || isNaN(fim.getTime()) || fim <= inicio) {
-                        return '0 minutos';
-                      }
-                      const minutos = Math.round((fim.getTime() - inicio.getTime()) / (1000 * 60));
-                      const horas = Math.floor(minutos / 60);
-                      const mins = minutos % 60;
-                      if (horas > 0) {
-                        return `${horas}h${mins > 0 ? ` ${mins}min` : ''}`;
-                      }
-                      return `${minutos} minutos`;
-                    })() : '0 minutos'}
+                    Duração: {duracao}
                   </p>
                 </div>
               </div>
