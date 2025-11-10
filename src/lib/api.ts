@@ -129,6 +129,14 @@ class ApiClient {
     return this.request<Partida[]>(`/partidas/${query}`);
   }
 
+  async getProximasPartidas(): Promise<Partida[]> {
+    return this.request<Partida[]>("/partidas/proximas");
+  }
+
+  async getPartidasPorTipo(tipo: string): Promise<Partida[]> {
+    return this.request<Partida[]>(`/partidas/tipo/${tipo}`);
+  }
+
   async getMinhasPartidas(): Promise<Partida[]> {
     return this.request<Partida[]>("/partidas/minhas");
   }

@@ -8,7 +8,9 @@ import { Select } from "@/components/ui/select-native";
 import { api, Partida } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Filter } from "lucide-react";
+import { Plus, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
   const [partidas, setPartidas] = useState<Partida[]>([]);
@@ -17,6 +19,8 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [categoria, setCategoria] = useState<string>("todas");
   const [activeTab, setActiveTab] = useState("todas");
+  const [currentPage, setCurrentPage] = useState(1);
+  const partidasPorPagina = 10;
   const isMountedRef = useRef(true);
   
   const { user } = useAuth();
@@ -102,6 +106,42 @@ export default function Dashboard() {
     return userNivelIndex >= partidaCategoriaIndex;
   };
 
+  // Agrupa partidas por data
+  const agruparPartidasPorData = (partidasLista: Partida[]) => {
+    const grupos: { [data: string]: Partida[] } = {};
+    
+    partidasLista.forEach((partida) => {
+      const data = format(new Date(partida.data_partida), "yyyy-MM-dd");
+      if (!grupos[data]) {
+        grupos[data] = [];
+      }
+      grupos[data].push(partida);
+    });
+    
+    // Ordena as datas
+    const datasOrdenadas = Object.keys(grupos).sort((a, b) => 
+      new Date(a).getTime() - new Date(b).getTime()
+    );
+    
+    return datasOrdenadas.map(data => ({
+      data,
+      partidas: grupos[data]
+    }));
+  };
+
+  // Paginação
+  const partidasAgrupadas = agruparPartidasPorData(partidas);
+  const totalPaginas = Math.ceil(partidasAgrupadas.length / partidasPorPagina);
+  const gruposVisiveis = partidasAgrupadas.slice(
+    (currentPage - 1) * partidasPorPagina,
+    currentPage * partidasPorPagina
+  );
+
+  // Reset página ao mudar filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoria, activeTab]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -163,16 +203,66 @@ export default function Dashboard() {
                 <p className="text-muted-foreground">Nenhuma partida encontrada</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {partidas.map((partida) => (
-                  <PartidaCard
-                    key={partida.id}
-                    partida={partida}
-                    onViewDetails={(id) => navigate(`/partida/${id}`)}
-                    onParticipar={handleParticipar}
-                    canParticipate={canParticipate(partida)}
-                  />
+              <div className="space-y-8">
+                {gruposVisiveis.map((grupo) => (
+                  <div key={grupo.data} className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1 bg-border" />
+                      <h2 className="text-lg font-semibold px-4 py-2 rounded-lg bg-muted">
+                        {format(new Date(grupo.data), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </h2>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {grupo.partidas.map((partida) => (
+                        <PartidaCard
+                          key={partida.id}
+                          partida={partida}
+                          onViewDetails={(id) => navigate(`/partida/${id}`)}
+                          onParticipar={handleParticipar}
+                          canParticipate={canParticipate(partida)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
+                
+                {/* Paginação */}
+                {totalPaginas > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="icon"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-10 h-10"
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCurrentPage(p => Math.min(totalPaginas, p + 1))}
+                      disabled={currentPage === totalPaginas}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>

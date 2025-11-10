@@ -52,6 +52,12 @@ export default function Auth() {
     const email = formData.get("email") as string;
     const senha = formData.get("senha") as string;
 
+    // Validação do tamanho do nome
+    if (nome.length > 25) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await register(nome, email, senha);
       navigate("/dashboard");
@@ -190,9 +196,23 @@ export default function Auth() {
                       id="nome"
                       name="nome"
                       placeholder="Seu nome"
+                      maxLength={25}
                       required
                       className="transition-smooth focus:scale-[1.02]"
+                      onInvalid={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        if (input.value.length > 25) {
+                          input.setCustomValidity("Abrevie seu nome por favor");
+                        }
+                      }}
+                      onInput={(e) => {
+                        const input = e.target as HTMLInputElement;
+                        input.setCustomValidity("");
+                      }}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Máximo de 25 caracteres
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email-register">Email</Label>
