@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api/v1': {
-        target: 'https://substantial-ebonee-galera-volei-7e40783c.koyeb.app',
+        target: 'https://little-shana-galera-voley-1bd286e6.koyeb.app/',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path,
