@@ -1,7 +1,7 @@
 // Use o proxy do Vite em desenvolvimento
 const API_BASE_URL = import.meta.env.DEV 
   ? "/api/v1" 
-  : "https://little-shana-galera-voley-1bd286e6.koyeb.app//api/v1";
+  : "https://little-shana-galera-voley-1bd286e6.koyeb.app/api/v1";
 
 // Types
 export interface User {

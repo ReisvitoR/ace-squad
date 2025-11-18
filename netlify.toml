@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/api/v1/*"
-  to = "https://little-shana-galera-voley-1bd286e6.koyeb.app//api/v1/:splat"
+  to = "https://little-shana-galera-voley-1bd286e6.koyeb.app/api/v1/:splat"
   status = 200
   force = true
 
