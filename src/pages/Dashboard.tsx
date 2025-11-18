@@ -139,9 +139,9 @@ export default function Dashboard() {
       grupos[data].push(partida);
     });
     
-    // Ordena as datas
+    // Ordena as datas (mais recentes primeiro)
     const datasOrdenadas = Object.keys(grupos).sort((a, b) => 
-      new Date(a).getTime() - new Date(b).getTime()
+      new Date(b).getTime() - new Date(a).getTime()
     );
     
     return datasOrdenadas.map(data => ({
