@@ -20,11 +20,11 @@ All colors MUST be HSL.
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
+    --secondary: 220 14% 92%;
     --secondary-foreground: 220 13% 13%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 13% 40%;
 
     --accent: 262 83% 58%;
     --accent-foreground: 0 0% 100%;
@@ -32,8 +32,8 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
     --ring: 262 83% 58%;
 
     --radius: 0.75rem;
@@ -139,6 +139,20 @@ All colors MUST be HSL.
   
   .transition-bounce {
     transition: var(--transition-bounce);
+  }
+  
+  /* Melhor visibilidade no modo claro */
+  .light .hover-enhanced:hover {
+    background-color: hsl(262 83% 58% / 0.12) !important;
+  }
+  
+  .light button:hover:not(:disabled),
+  .light [role="button"]:hover:not(:disabled) {
+    background-color: hsl(262 83% 58% / 0.08);
+  }
+  
+  .light .tab-active {
+    background-color: hsl(262 83% 58% / 0.15);
   }
   
   .animate-slide-up {
