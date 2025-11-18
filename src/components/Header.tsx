@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Mail, User, Moon, Sun, CircleDot } from "lucide-react";
+import { LogOut, Mail, User, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
@@ -42,8 +42,12 @@ export function Header() {
           className="flex items-center gap-3 cursor-pointer transition-smooth hover:opacity-80"
           onClick={() => navigate("/dashboard")}
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-spin-slow">
-            <CircleDot className="w-6 h-6 text-primary-foreground" />
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center p-1">
+            <img 
+              src="/volleyball.png" 
+              alt="Volleyball" 
+              className="w-full h-full object-contain animate-spin-slow"
+            />
           </div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Galera do Vôlei
